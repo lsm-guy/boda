@@ -2,64 +2,538 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<title>Edu y Ana · Álbum de la boda</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#faf7f2">
+<title>Edu y Ana · Álbum de la boda</title>
+<!-- Album colaborativo de boda · interfaz pública de los invitados -->
 <style>
-  /* Altura de la franja azul que Google inyecta sobre la app.
-     Si asomara un trozo, sube este valor unos pixeles. */
-  :root { --aviso: 40px; }
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&display=swap');
 
-  html, body {
-    margin: 0; padding: 0; height: 100%;
-    overflow: hidden;
-    background: #faf7f2;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  :root{
+    --fondo:  #faf7f2;
+    --texto:  #2f2a26;
+    --acento: #8a9a7b;
+    --tenue: rgba(47,42,38,.55);
+    --linea: rgba(47,42,38,.14);
+    --tarjeta:#fff;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--fondo); color:var(--texto);
+    font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    font-size:16px; line-height:1.55;
+    padding:0 0 env(safe-area-inset-bottom);
+  }
+  .envoltorio{max-width:640px;margin:0 auto;padding:0 20px}
+
+  /* ---------- Portada ---------- */
+  header{text-align:center;padding:44px 0 30px}
+  .filigrana{color:var(--acento);letter-spacing:.42em;font-size:11px;text-transform:uppercase;margin-bottom:18px}
+  h1{
+    font-family:'Cormorant Garamond',Georgia,serif;
+    font-weight:600; font-size:clamp(34px,10vw,52px);
+    line-height:1.08; margin:0 0 12px;
+  }
+  .datos{font-size:14px;color:var(--tenue);margin:0}
+  .datos span{display:block}
+  .bienvenida{
+    font-family:'Cormorant Garamond',Georgia,serif;
+    font-style:italic; font-size:19px; line-height:1.5;
+    color:var(--tenue); margin:22px auto 0; max-width:34em;
+  }
+  .separador{width:54px;height:1px;background:var(--acento);margin:26px auto;opacity:.6}
+
+  /* ---------- Tarjeta de subida ---------- */
+  .tarjeta{
+    background:var(--tarjeta); border:1px solid var(--linea); border-radius:18px;
+    padding:22px; box-shadow:0 1px 3px rgba(47,42,38,.05);
+  }
+  label{display:block;font-size:13px;font-weight:500;margin:0 0 6px}
+  .opcional{color:var(--tenue);font-weight:400}
+  input[type=text],textarea{
+    width:100%; padding:12px 14px; font:inherit; font-size:16px;
+    color:var(--texto); background:var(--fondo);
+    border:1px solid var(--linea); border-radius:11px; outline:none;
+    transition:border-color .15s;
+  }
+  input[type=text]:focus,textarea:focus{border-color:var(--acento)}
+  textarea{resize:vertical;min-height:76px}
+  .campo + .campo{margin-top:16px}
+
+  .boton{
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    width:100%; margin-top:20px; padding:16px;
+    font:inherit; font-size:16px; font-weight:600; color:#fff;
+    background:var(--acento); border:0; border-radius:13px; cursor:pointer;
+    transition:filter .15s,transform .05s;
+  }
+  .boton:hover{filter:brightness(1.07)}
+  .boton:active{transform:scale(.99)}
+  .boton[disabled]{opacity:.55;cursor:default;filter:none;transform:none}
+  .boton svg{width:20px;height:20px;flex:none}
+  .pista{font-size:12.5px;color:var(--tenue);text-align:center;margin:10px 0 0}
+  input[type=file]{display:none}
+
+  /* ---------- Cola de subida ---------- */
+  #cola{list-style:none;margin:18px 0 0;padding:0}
+  #cola li{
+    display:flex;align-items:center;gap:12px;
+    padding:9px 0;border-top:1px solid var(--linea);font-size:13.5px;
+  }
+  #cola li:first-child{border-top:0}
+  .miniatura{width:42px;height:42px;border-radius:9px;object-fit:cover;flex:none;background:var(--fondo)}
+  .nombre{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--tenue)}
+  .estado{flex:none;font-weight:500;font-size:12px}
+  .estado.ok{color:var(--acento)}
+  .estado.error{color:#b4472f}
+  .girando{
+    width:15px;height:15px;border:2px solid var(--linea);border-top-color:var(--acento);
+    border-radius:50%;animation:giro .7s linear infinite;flex:none;display:inline-block;
+  }
+  @keyframes giro{to{transform:rotate(360deg)}}
+
+  .aviso{
+    margin-top:18px;padding:14px 16px;border-radius:12px;font-size:14px;
+    background:rgba(138,154,123,.13);border:1px solid rgba(138,154,123,.35);
   }
 
-  /* Mensaje de fondo: queda tapado por el iframe cuando la app carga.
-     Si el navegador bloquea el iframe, es lo que ve el invitado. */
-  .respaldo {
-    position: fixed; inset: 0;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    text-align: center; padding: 24px;
-    color: #2f2a26;
+  /* ---------- Galeria ---------- */
+  .seccion{margin-top:52px}
+  .cabecera-seccion{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px}
+  h2{font-family:'Cormorant Garamond',Georgia,serif;font-weight:600;font-size:27px;margin:0}
+  .contador{font-size:13px;color:var(--tenue)}
+  .acciones{display:flex;align-items:center;gap:12px}
+  .refrescar{
+    font:inherit;font-size:13px;color:var(--acento);background:none;border:0;
+    padding:4px 0;cursor:pointer;border-bottom:1px solid rgba(138,154,123,.45);
   }
-  .respaldo p { color: rgba(47,42,38,.6); font-size: 15px; margin: 0 0 18px }
-  .respaldo a {
-    color: #fff; background: #8a9a7b; text-decoration: none;
-    padding: 14px 22px; border-radius: 12px; font-weight: 600; font-size: 15px;
+  .refrescar[disabled]{opacity:.5;cursor:default}
+  .rejilla{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+  @media(min-width:520px){.rejilla{grid-template-columns:repeat(4,1fr);gap:9px}}
+  .celda{
+    position:relative;aspect-ratio:1;border-radius:11px;overflow:hidden;
+    background:rgba(47,42,38,.06);cursor:pointer;border:0;padding:0;
   }
+  .celda img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .4s}
+  .celda img.visible{opacity:1}
+  .celda .globo{
+    position:absolute;right:6px;bottom:6px;width:17px;height:17px;
+    background:rgba(255,255,255,.92);border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .celda .globo svg{width:10px;height:10px;color:var(--texto)}
+  .vacio{text-align:center;color:var(--tenue);font-style:italic;
+         font-family:'Cormorant Garamond',Georgia,serif;font-size:19px;padding:34px 0}
 
-  /* La ventana recortada: el iframe se sube --aviso pixeles y la franja
-     de Google queda fuera del area visible. */
-  .marco { position: fixed; inset: 0; overflow: hidden; }
-  .marco iframe {
-    position: absolute;
-    top: calc(var(--aviso) * -1);
-    left: 0;
-    width: 100%;
-    height: calc(100% + var(--aviso));
-    border: 0;
-    display: block;
+  footer{text-align:center;padding:46px 20px 40px;color:var(--tenue);font-size:12.5px}
+  footer .etiqueta{color:var(--acento);letter-spacing:.16em;font-size:11px;text-transform:uppercase}
+
+  /* ---------- Visor ---------- */
+  #visor{
+    position:fixed;inset:0;background:rgba(24,21,19,.94);z-index:50;
+    display:none;flex-direction:column;align-items:center;justify-content:center;padding:16px;
   }
+  #visor.abierto{display:flex}
+  #visor img{max-width:100%;max-height:74vh;border-radius:8px;object-fit:contain}
+  #visor .pie{color:#f3efe9;text-align:center;margin-top:16px;max-width:34em}
+  #visor .pie .autor{font-size:12px;letter-spacing:.13em;text-transform:uppercase;opacity:.65}
+  #visor .pie .texto{font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;font-size:19px;margin-top:5px}
+  #visor .cerrar{position:absolute;top:14px;right:16px;background:none;border:0;color:#f3efe9;font-size:30px;cursor:pointer;line-height:1;padding:8px}
+  #visor .flecha{position:absolute;top:50%;transform:translateY(-50%);background:none;border:0;color:#f3efe9;font-size:34px;cursor:pointer;padding:14px;opacity:.7}
+  #visor .flecha:hover{opacity:1}
+  #visor .izq{left:2px}
+  #visor .der{right:2px}
 </style>
 </head>
 <body>
 
-  <div class="respaldo">
-    <p>Cargando el álbum de la boda…</p>
-    <a href="https://script.google.com/macros/s/AKfycbzVUZbPH4vFUDw0H2j7PpCln5uyHFRooD7hDxUkx157lHTz9WAx3ZtDXfVRzLQd1u71/exec">Abrir el álbum</a>
-  </div>
+<div class="envoltorio">
 
-  <div class="marco">
-    <iframe
-      src="https://script.google.com/macros/s/AKfycbzVUZbPH4vFUDw0H2j7PpCln5uyHFRooD7hDxUkx157lHTz9WAx3ZtDXfVRzLQd1u71/exec"
-      title="Álbum de fotos de la boda de Edu y Ana"
-      allow="camera; clipboard-write"></iframe>
-  </div>
+  <header>
+    <div class="filigrana">Nuestro album</div>
+    <h1>Edu y Ana</h1>
+    <p class="datos">
+      <span>27 de septiembre de 2026</span>
+      <span>San Francisco / El Pardo</span>
+    </p>
+    <p class="bienvenida">Gracias por acompañarnos en un día tan especial. Sube aquí las fotos que hagas: son el mejor regalo que podemos llevarnos.</p>
+    <div class="separador"></div>
+  </header>
 
+  <main class="tarjeta">
+    <div class="campo">
+      <label for="autor">Tu nombre <span class="opcional">(para que sepamos quien es)</span></label>
+      <input type="text" id="autor" maxlength="60" placeholder="" autocomplete="name">
+    </div>
+    <div class="campo">
+      <label for="mensaje">Dedicatoria <span class="opcional">(opcional)</span></label>
+      <textarea id="mensaje" maxlength="500" placeholder="Que viva el amor. Nos lo hemos pasado increible con vosotros."></textarea>
+    </div>
+
+    <button class="boton" id="btn" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14.5 4h-5L8 6H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-4l-1.5-2Z"/>
+        <circle cx="12" cy="13" r="3.6"/>
+      </svg>
+      Elegir fotos
+    </button>
+    <input type="file" id="archivos" accept="image/*" multiple>
+    <p class="pista">Puedes subir hasta 20 fotos de una vez. Se envían ya optimizadas, sin gastarte datos de más.</p>
+
+    <ul id="cola"></ul>
+    <div class="aviso" id="aviso" style="display:none"></div>
+  </main>
+
+  <section class="seccion">
+    <div class="cabecera-seccion">
+      <h2>Lo que vais capturando</h2>
+      <div class="acciones">
+        <span class="contador" id="contador"></span>
+        <button class="refrescar" id="refrescar" type="button">Actualizar</button>
+      </div>
+    </div>
+    <div class="rejilla" id="rejilla"></div>
+    <p class="vacio" id="vacio">Todavia no hay ninguna foto. Se la primera persona en subir una.</p>
+  </section>
+
+  <footer>
+    <div class="etiqueta">#EduyAna2026</div>
+    <p style="margin:10px 0 0">Con cariño, para Edu y Ana</p>
+  </footer>
+</div>
+
+<div id="visor">
+  <button class="cerrar" id="cerrar" aria-label="Cerrar">&times;</button>
+  <button class="flecha izq" id="anterior" aria-label="Anterior">&#8249;</button>
+  <button class="flecha der" id="siguiente" aria-label="Siguiente">&#8250;</button>
+  <img id="visorImg" alt="">
+  <div class="pie">
+    <div class="autor" id="visorAutor"></div>
+    <div class="texto" id="visorTexto"></div>
+  </div>
+</div>
+
+<script>
+/* Pega aquí la URL pública de tu Worker, sin una barra al final. */
+const API_URL = 'https://boda-api.bodaeduyana2026.workers.dev';
+
+const CFG = {
+  maxFotosPorTanda: 20,
+  ladoMaximoPx: 2048,
+  calidadJpeg: 0.85,
+  maxMBporArchivo: 25,
+  permitirVideo: false
+};
+
+function comprobarConfiguracion() {
+  if (!/^https:\/\/.+/.test(API_URL)) {
+    throw new Error('Falta configurar API_URL en index.html.');
+  }
+}
+
+const $ = function (id) { return document.getElementById(id); };
+const miniatura = function (id, ancho) {
+  return 'https://drive.google.com/thumbnail?id=' + id + '&sz=w' + ancho;
+};
+
+/* ---------------- Nombre recordado ---------------- */
+try {
+  const guardado = localStorage.getItem('boda_autor');
+  if (guardado) $('autor').value = guardado;
+} catch (e) {}
+$('autor').addEventListener('change', function () {
+  try { localStorage.setItem('boda_autor', $('autor').value.trim()); } catch (e) {}
+});
+
+/* ---------------- Seleccion de archivos ---------------- */
+$('btn').addEventListener('click', function () { $('archivos').click(); });
+$('archivos').addEventListener('change', function (ev) {
+  const lista = Array.prototype.slice.call(ev.target.files || []);
+  ev.target.value = '';
+  if (lista.length) encolar(lista);
+});
+
+/* ---------------- Compresion en el movil ---------------- */
+async function aBitmap(file) {
+  if (window.createImageBitmap) {
+    try { return await createImageBitmap(file, { imageOrientation: 'from-image' }); }
+    catch (e) { /* navegadores sin esa opcion */ }
+    try { return await createImageBitmap(file); } catch (e) {}
+  }
+  return await new Promise(function (res, rej) {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = function () { URL.revokeObjectURL(url); res(img); };
+    img.onerror = function () { URL.revokeObjectURL(url); rej(new Error('No se pudo leer la imagen')); };
+    img.src = url;
+  });
+}
+
+async function comprimir(file) {
+  if (file.type.indexOf('image/') !== 0) return { blob: file, mime: file.type };
+  const fuente = await aBitmap(file);
+  let w = fuente.width, h = fuente.height;
+  const escala = Math.min(1, CFG.ladoMaximoPx / Math.max(w, h));
+  w = Math.max(1, Math.round(w * escala));
+  h = Math.max(1, Math.round(h * escala));
+
+  const lienzo = document.createElement('canvas');
+  lienzo.width = w; lienzo.height = h;
+  lienzo.getContext('2d').drawImage(fuente, 0, 0, w, h);
+  if (fuente.close) fuente.close();
+
+  const blob = await new Promise(function (res) {
+    lienzo.toBlob(res, 'image/jpeg', CFG.calidadJpeg);
+  });
+  lienzo.width = lienzo.height = 0;
+  if (!blob) return { blob: file, mime: file.type };
+  return { blob: blob, mime: 'image/jpeg' };
+}
+
+function aBase64(blob) {
+  return new Promise(function (res, rej) {
+    const lector = new FileReader();
+    lector.onload = function () { res(String(lector.result).split(',')[1]); };
+    lector.onerror = function () { rej(new Error('No se pudo leer el archivo')); };
+    lector.readAsDataURL(blob);
+  });
+}
+
+async function enviar(carga) {
+  comprobarConfiguracion();
+  const respuesta = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'upload', datos: carga })
+  });
+  const datos = await respuesta.json();
+  if (!respuesta.ok || !datos.ok) {
+    throw new Error(datos.error || 'No se pudo subir la foto.');
+  }
+  return datos.result;
+}
+
+/* ---------------- Cola de subida ---------------- */
+let trabajando = false;
+const pendientes = [];
+
+function encolar(archivos) {
+  const validos = archivos.filter(function (f) {
+    return f.type.indexOf('image/') === 0 || (CFG.permitirVideo && f.type.indexOf('video/') === 0);
+  });
+  const tanda = validos.slice(0, CFG.maxFotosPorTanda);
+  if (!tanda.length) { mostrarAviso('Selecciona imagenes, por favor.'); return; }
+  if (validos.length > tanda.length) {
+    mostrarAviso('Se han anadido las primeras ' + CFG.maxFotosPorTanda + '. Repite para subir el resto.');
+  }
+  tanda.forEach(function (f) { pendientes.push({ file: f, fila: crearFila(f) }); });
+  procesar();
+}
+
+function crearFila(file) {
+  const li = document.createElement('li');
+
+  const img = document.createElement('img');
+  img.className = 'miniatura';
+  img.alt = '';
+  try { img.src = URL.createObjectURL(file); } catch (e) {}
+
+  const nom = document.createElement('span');
+  nom.className = 'nombre';
+  nom.textContent = file.name;
+
+  const est = document.createElement('span');
+  est.className = 'estado';
+  const rueda = document.createElement('span');
+  rueda.className = 'girando';
+  est.appendChild(rueda);
+
+  li.appendChild(img); li.appendChild(nom); li.appendChild(est);
+  $('cola').appendChild(li);
+  return { li: li, estado: est, img: img };
+}
+
+function marcar(fila, texto, clase) {
+  fila.estado.className = 'estado ' + clase;
+  fila.estado.textContent = texto;
+}
+
+async function procesar() {
+  if (trabajando) return;
+  trabajando = true;
+  $('btn').disabled = true;
+
+  while (pendientes.length) {
+    const tarea = pendientes.shift();
+    let ultimoError = null;
+    for (let intento = 0; intento < 2; intento++) {
+      try {
+        const opt = await comprimir(tarea.file);
+        const base64 = await aBase64(opt.blob);
+        await enviar({
+          base64: base64,
+          mime: opt.mime,
+          autor: $('autor').value,
+          mensaje: $('mensaje').value
+        });
+        ultimoError = null;
+        break;
+      } catch (err) {
+        ultimoError = err;
+        await new Promise(function (r) { setTimeout(r, 900); });
+      }
+    }
+    if (ultimoError) {
+      marcar(tarea.fila, 'Fallo', 'error');
+      console.error(ultimoError);
+    } else {
+      marcar(tarea.fila, 'Subida', 'ok');
+      try { URL.revokeObjectURL(tarea.fila.img.src); } catch (e) {}
+    }
+  }
+
+  trabajando = false;
+  $('btn').disabled = false;
+  mostrarAviso('Listo. Muchisimas gracias, significa mucho para nosotros.');
+  $('mensaje').value = '';
+  setTimeout(cargarGaleria, 1200);
+}
+
+let tempAviso = null;
+function mostrarAviso(texto) {
+  const a = $('aviso');
+  a.textContent = texto;
+  a.style.display = 'block';
+  clearTimeout(tempAviso);
+  tempAviso = setTimeout(function () { a.style.display = 'none'; }, 7000);
+}
+
+/* ---------------- Galeria ---------------- */
+let galeria = [];
+
+async function cargarGaleria() {
+  const boton = $('refrescar');
+  boton.disabled = true;
+  try {
+    comprobarConfiguracion();
+    const respuesta = await fetch(API_URL + '?action=gallery', { cache: 'no-store' });
+    const datos = await respuesta.json();
+    if (!respuesta.ok || !datos.ok) throw new Error(datos.error || 'No se pudo cargar la galería.');
+    pintarGaleria(datos.result);
+  } catch (e) {
+    console.error(e);
+    mostrarAviso(e.message || 'No se pudo cargar la galería.');
+  } finally {
+    boton.disabled = false;
+  }
+}
+
+function pintarGaleria(datos) {
+  galeria = datos || [];
+  const rejilla = $('rejilla');
+  rejilla.innerHTML = '';
+  $('vacio').style.display = galeria.length ? 'none' : 'block';
+  $('contador').textContent = galeria.length
+    ? galeria.length + (galeria.length === 1 ? ' foto' : ' fotos')
+    : '';
+
+  galeria.forEach(function (item, i) {
+    const celda = document.createElement('button');
+    celda.className = 'celda';
+    celda.type = 'button';
+
+    const img = document.createElement('img');
+    img.loading = 'lazy';
+    img.alt = item.autor ? 'Foto de ' + item.autor : 'Foto de la boda';
+    let reintentos = 0;
+    img.onerror = function () {            // Drive tarda un poco en generar la miniatura
+      if (reintentos++ < 3) {
+        setTimeout(function () {
+          img.src = miniatura(item.id, 400) + '&r=' + reintentos;
+        }, 1500 * reintentos);
+      }
+    };
+    img.onload = function () { img.classList.add('visible'); };
+    img.src = miniatura(item.id, 400);
+    celda.appendChild(img);
+
+    if (item.mensaje) {
+      const globo = document.createElement('span');
+      globo.className = 'globo';
+      globo.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4L3 21l1.1-3.2A8.4 8.4 0 1 1 21 11.5Z"/></svg>';
+      celda.appendChild(globo);
+    }
+
+    celda.addEventListener('click', function () { abrirVisor(i); });
+    rejilla.appendChild(celda);
+  });
+}
+
+/* ---------------- Visor ---------------- */
+let indiceActual = 0;
+
+function abrirVisor(i) {
+  const item = galeria[i];
+  if (!item) return;
+  indiceActual = i;
+  $('visorImg').src = miniatura(item.id, 1600);
+  $('visorAutor').textContent = item.autor || '';
+  $('visorTexto').textContent = item.mensaje || '';
+  $('visor').classList.add('abierto');
+  document.body.style.overflow = 'hidden';
+}
+
+function cerrarVisor() {
+  $('visor').classList.remove('abierto');
+  $('visorImg').src = '';
+  document.body.style.overflow = '';
+}
+
+function mover(paso) {
+  if (!galeria.length) return;
+  abrirVisor((indiceActual + paso + galeria.length) % galeria.length);
+}
+
+$('cerrar').addEventListener('click', cerrarVisor);
+$('anterior').addEventListener('click', function (e) { e.stopPropagation(); mover(-1); });
+$('siguiente').addEventListener('click', function (e) { e.stopPropagation(); mover(1); });
+$('visor').addEventListener('click', function (e) { if (e.target === $('visor')) cerrarVisor(); });
+document.addEventListener('keydown', function (e) {
+  if (!$('visor').classList.contains('abierto')) return;
+  if (e.key === 'Escape') cerrarVisor();
+  if (e.key === 'ArrowLeft') mover(-1);
+  if (e.key === 'ArrowRight') mover(1);
+});
+
+/* ---------------- Arranque y refresco ----------------
+   Cada consulta cuenta como una ejecucion de Apps Script y la cuota
+   diaria de una cuenta Gmail es limitada. Por eso solo refrescamos si
+   la pagina esta en primer plano y el invitado sigue mirandola.       */
+const INTERVALO_MS   = 90000;              // 90 s entre refrescos
+const INACTIVIDAD_MS = 15 * 60 * 1000;     // se detiene tras 15 min sin tocar nada
+let ultimoContacto = Date.now();
+
+['click', 'touchstart', 'keydown', 'scroll'].forEach(function (ev) {
+  document.addEventListener(ev, function () { ultimoContacto = Date.now(); }, { passive: true });
+});
+
+$('refrescar').addEventListener('click', function () {
+  ultimoContacto = Date.now();
+  cargarGaleria();
+});
+
+document.addEventListener('visibilitychange', function () {
+  if (!document.hidden) { ultimoContacto = Date.now(); cargarGaleria(); }
+});
+
+setInterval(function () {
+  if (trabajando || document.hidden) return;
+  if (Date.now() - ultimoContacto > INACTIVIDAD_MS) return;
+  cargarGaleria();
+}, INTERVALO_MS);
+
+cargarGaleria();
+</script>
 </body>
 </html>
